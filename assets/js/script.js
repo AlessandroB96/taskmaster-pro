@@ -13,6 +13,39 @@ var createTask = function(taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
+  //LINE 17-22 checks to see due date
+  var auditTask = function(taskEl) {
+    //to ensure element is getting to the function
+    // console.log(taskEl);
+
+    //get date from task element
+    var date = $(taskEl).find("span").text().trim();
+
+    //ensure it worked
+    console.log(date);
+
+    //convert to moment object at 5:00pm
+    var time = moment(date, "L").set("hour", 17);
+    //this should print out an object for the value of the date variable, but at 5pm of that date
+    //this takes the date, converts it to MM/DD/YYYY and we can then take the date info, parse it to the moment object using moment.js. We use jquery to select the taskEl element and ffind the span element inside it, then retrieve the text value using text(), and then a javascript method of .trim() to cut off empty spaces 
+    console.log(time);
+
+    //remove any old classes from element 
+    $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+
+    //apply new class if task is near/over due date
+      if (moment().isAfter(time)) {
+        $(taskEl).addClass("list-group-item-danger");
+      }
+
+    //check if the due date is nearing close 
+      else if (Math.abs(moment().diff(time, "days")) <= 2) {
+        $(taskEl).addClass("list-group-item-warning");
+      }
+  };
+  //check due date
+  auditTask(taskLi);
+
 
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
@@ -116,8 +149,19 @@ $(".list-group").on("click", "span", function () {
   //swap out elements 
   $(this).replaceWith(dateInput);
 
+  //enable jquery ui datepicker
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function() {
+      //when calendar is closed, force a "change" event on the 'dateInput'
+      $(this).trigger("change");
+    }
+  });
   //automatically focus on new element 
   dateInput.trigger("focus");
+
+
+
 });
 
 //------------------------------------------------------
@@ -125,7 +169,7 @@ $(".list-group").on("click", "span", function () {
 //BLUR modified due date and save its contents
 
 //value of due date was changed
-$(".list-group").on("blur","input[type='text']", function (){
+$(".list-group").on("change","input[type='text']", function (){
   //get current text
   var date = $(this)
   .val()
@@ -154,6 +198,10 @@ $(".list-group").on("blur","input[type='text']", function (){
 
   //replace input with span element
   $(this).replaceWith(taskSpan);
+
+  //Pass task's <li> element into auditTask() to check new due date from calendar
+  auditTask($(taskSpan).closest(".list-group-item"));
+
 });
 
 //------------------------------------------------------
@@ -286,3 +334,22 @@ $("#trash").droppable({
     //console.log("out");
   }
 })
+
+//-------------------------------------------------
+
+//adding jquery UI date picker and prevent user from clicking a day that already passed
+
+$("#modalDueDate").datepicker({
+  minDate: 1    //min date is one day from the current date
+});
+
+//--------------------------------------------------
+
+//Checking date of task and coloring it based on overdue/2 days left
+
+var auditTask = function(taskEl) {
+  //to ensure element is getting to the function
+  console.log(taskEl);
+
+  //and then update the createTask() function to execute it and pass taskLi element to it as arguement 
+}
