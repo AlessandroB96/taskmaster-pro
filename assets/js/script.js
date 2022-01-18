@@ -219,7 +219,7 @@ $("#task-form-modal").on("shown.bs.modal", function() {
 });
 
 // save button in modal was clicked
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -262,17 +262,23 @@ $(".card .list-group").sortable({
     scroll: false,
     tolerance: "pointer",
     helper: "clone",
-    activate: function(event) {
+    activate: function(event, ui) {
       //console.log("activate", this);
+      $(this).addClass("dropover");
+      $(".bottom-trash").addClass("bottom-trash-drag");
     }, 
-      deactivate: function(event) {
+      deactivate: function(event, ui) {
         //console.log("deactivate", this);
+        $(this).removeClass("dropover");
+        $(".bottom-trash").removeClass("bottom-trash-drag");
     },
       over: function(event) {
         //console.log("over", event.target);
+        $(event.target).addClass("dropover-active");
     },
       out: function(event) {
         //console.log("out", event.target);
+        $(event.target).removeClass("dropover-active");
     },
       update: function(event) {
 
@@ -326,12 +332,16 @@ $("#trash").droppable({
   drop: function(event, ui) {
     ui.draggable.remove();    //removes it from the DOM entirely (NOTE: we dont need to call on saveTasks() becuase removing a task triggers a sortable update(), meaning the sortable calls saveTasks() for us)
     console.log("drop");
+    $(".bottom-trash").removeClass("bottom-trash-active");
+
   },
   over: function(event, ui) {
     //console.log("over");
+    $(".bottom-trash").addClass("bottom-trash-active");
   },
   out: function(event, ui) {
     //console.log("out");
+    $(".bottom-trash").removeClass("bottom-trash-active");
   }
 })
 
@@ -353,3 +363,15 @@ var auditTask = function(taskEl) {
 
   //and then update the createTask() function to execute it and pass taskLi element to it as arguement 
 }
+
+//---------------------------------------------------
+
+//AUTOMATIC TASK AUDITING 
+
+//jquery selector passes each element it finds using the selector into the callback function. That element is expressed in the el arguement of the function. In this interval, we loop through every task on the page with a class of list-group-item and execute the auditTask() function the check the due date of each one. 
+
+setInterval(function() {
+  $(".card .list-group-item").each(function(index, el) {
+    auditTask(el);
+  });
+}, 1800000);
